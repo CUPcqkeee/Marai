@@ -1,5 +1,5 @@
 import os
-import sqlite3
+from mysql.connector import (connection)
 import disnake
 from disnake.ext import commands
 
@@ -10,76 +10,111 @@ bot = commands.Bot(
     help_command=None,
     allowed_mentions=disnake.AllowedMentions.all())
 
-with sqlite3.connect("Marai.db") as db:
-    cursor = db.cursor()
-
-    @bot.command(name="load")
-    async def load(ctx, extension=None):
-        perms_owner = cursor.execute(f"""SELECT * FROM perms WHERE user_id = {ctx.author.id} AND lvl_rights = 'OWN'""").fetchone()
-
-        if perms_owner is not None:
-            if extension is None:
-                await ctx.message.delete(delay=5)
-                await ctx.reply(content="Вы не указали название модуля.", delete_after=5)
-                return
-            try:
-                bot.load_extension(f"cogs.{extension}")
-                await ctx.message.delete(delay=10)
-                await ctx.reply(content=f"Модуль **{extension}** загружен.", delete_after=10)
-                return
-            except BaseException:
-                await ctx.message.delete(delay=5)
-                await ctx.reply(content="Вы указали неправильное название модуля.", delete_after=5)
-                return
-
-        await ctx.message.delete(delay=5)
-        await ctx.reply(content="Права на использование есть только у разработчика бота, уровень прав которого равен **1**.", delete_after=5)
+cnx = connection.MySQLConnection(user="Marai",
+                                 password="MARAIFS*34754SFDG_$7^FSGJnfsdg#@#$$",
+                                 host="192.168.8.16",
+                                 database="DiscordBots")
+cursor = cnx.cursor()
 
 
-    @bot.command(name="unload")
-    async def unload(ctx, extension=None):
-        perms_owner = cursor.execute(f"""SELECT * FROM perms WHERE user_id = {ctx.author.id} AND lvl_rights = 'OWN'""").fetchone()
-
-        if perms_owner is not None:
-            if extension is None:
-                await ctx.message.delete(delay=5)
-                await ctx.reply(content="Вы не указали название модуля.", delete_after=5)
-                return
-            try:
-                bot.unload_extension(f"cogs.{extension}")
-                await ctx.message.delete(delay=10)
-                await ctx.reply(content=f"Модуль **{extension}** отключён.", delete_after=10)
-                return
-            except BaseException:
-                await ctx.message.delete(delay=5)
-                await ctx.reply(content="Вы указали неправильное название модуля.", delete_after=5)
-                return
-
-        await ctx.message.delete(delay=5)
-        await ctx.reply(content="Права на использование есть только у разработчика бота, уровень прав которого равен **1**.", delete_after=5)
+def error_embed(description):
+    embed = disnake.Embed(description=f"{description}", colour=disnake.Colour.red())
+    embed.set_author(name=f"Ошибка использования!")
+    return embed
 
 
-    @bot.command(name="reload")
-    async def reload(ctx, extension=None):
-        perms_owner = cursor.execute(f"""SELECT * FROM perms WHERE user_id = {ctx.author.id} AND lvl_rights = 'OWN'""").fetchone()
+def success_embed(description):
+    embed = disnake.Embed(description=f"{description}", colour=disnake.Colour.green())
+    embed.set_author(name=f"Успешное использование")
+    return embed
 
-        if perms_owner is not None:
-            if extension is None:
-                await ctx.message.delete(delay=5)
-                await ctx.reply(content="Вы не указали название модуля.", delete_after=5)
-                return
-            try:
-                bot.reload_extension(f"cogs.{extension}")
-                await ctx.message.delete(delay=10)
-                await ctx.reply(content=f"Модуль **{extension}** перезагружен.", delete_after=10)
-                return
-            except BaseException:
-                await ctx.message.delete(delay=5)
-                await ctx.reply(content="Вы указали неправильное название модуля.", delete_after=5)
-                return
 
-        await ctx.message.delete(delay=5)
-        await ctx.reply(content="Права на использование есть только у разработчика бота, уровень прав которого равен **1**.", delete_after=5)
+@bot.command(name="load")
+async def load(ctx, extension=None):
+    perms_owner = cursor.execute(
+        f"""SELECT lvlrights FROM `Perms` WHERE `user_id` = '{ctx.author.id}' AND `lvlrights` = 'OWN'""")
+    result = cursor.fetchall()
+
+    if result[0][0] is not None:
+        if extension is None:
+            await ctx.message.delete(delay=5)
+            embed = error_embed(description=f"Вы не указали название модуля")
+            await ctx.author.send(embed=embed)
+            return
+        try:
+            bot.load_extension(f"cogs.{extension}")
+            await ctx.message.delete(delay=10)
+            embed = success_embed(description=f"Модуль **{extension}** был загружен")
+            await ctx.author.send(embed=embed)
+            return
+        except BaseException:
+            await ctx.message.delete(delay=5)
+            embed = error_embed(description=f"Вы указали неверное название модуля")
+            await ctx.author.send(embed=embed)
+            return
+
+    await ctx.message.delete(delay=5)
+    embed = error_embed(description=f"У вас недостаточно прав")
+    await ctx.author.send(embed=embed)
+
+
+@bot.command(name="unload")
+async def unload(ctx, extension=None):
+    perms_owner = cursor.execute(
+        f"""SELECT lvlrights FROM `Perms` WHERE `user_id` = '{ctx.author.id}' AND `lvlrights` = 'OWN'""")
+    result = cursor.fetchall()
+
+    if result[0][0] is not None:
+        if extension is None:
+            await ctx.message.delete(delay=5)
+            embed = error_embed(description=f"Вы не указали название модуля")
+            await ctx.author.send(embed=embed)
+            return
+        try:
+            bot.load_extension(f"cogs.{extension}")
+            await ctx.message.delete(delay=10)
+            embed = success_embed(description=f"Модуль **{extension}** был отгружен")
+            await ctx.author.send(embed=embed)
+            return
+        except BaseException:
+            await ctx.message.delete(delay=5)
+            embed = error_embed(description=f"Вы указали неверное название модуля")
+            await ctx.author.send(embed=embed)
+            return
+
+    await ctx.message.delete(delay=5)
+    embed = error_embed(description=f"У вас недостаточно прав")
+    await ctx.author.send(embed=embed)
+
+
+@bot.command(name="reload")
+async def reload(ctx, extension=None):
+    perms_owner = cursor.execute(
+        f"""SELECT lvlrights FROM `Perms` WHERE `user_id` = '{ctx.author.id}' AND `lvlrights` = 'OWN'""")
+    result = cursor.fetchall()
+
+    if result[0][0] is not None:
+        if extension is None:
+            await ctx.message.delete(delay=5)
+            embed = error_embed(description=f"Вы не указали название модуля")
+            await ctx.author.send(embed=embed)
+            return
+        try:
+            bot.load_extension(f"cogs.{extension}")
+            await ctx.message.delete(delay=10)
+            embed = success_embed(description=f"Модуль **{extension}** был перезагружен")
+            await ctx.author.send(embed=embed)
+            return
+        except BaseException:
+            await ctx.message.delete(delay=5)
+            embed = error_embed(description=f"Вы указали неверное название модуля")
+            await ctx.author.send(embed=embed)
+            return
+
+    await ctx.message.delete(delay=5)
+    embed = error_embed(description=f"У вас недостаточно прав")
+    await ctx.author.send(embed=embed)
+
 
 path = "./cogs"
 for root, dirs, files in os.walk(path):
