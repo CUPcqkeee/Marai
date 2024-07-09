@@ -9,8 +9,8 @@
   },
   "Database": {
     "User": "Marai",
-    "Password": "MARAIFS*34754SFDG_$7^FSGJnfsdg#@#$$",
-    "Host": "192.168.8.16",
+    "Password": "PASSWORD",
+    "Host": "IP",
     "Database_Name": "DiscordBots"
   },
   "Levels": {
