@@ -11,8 +11,8 @@ bot = commands.Bot(
     allowed_mentions=disnake.AllowedMentions.all())
 
 cnx = connection.MySQLConnection(user="Marai",
-                                 password="MARAIFS*34754SFDG_$7^FSGJnfsdg#@#$$",
-                                 host="192.168.8.16",
+                                 password="PASSWORD",
+                                 host="IP",
                                  database="DiscordBots")
 cursor = cnx.cursor()
 
