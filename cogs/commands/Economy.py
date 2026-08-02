@@ -8,8 +8,8 @@ from disnake.ui import Button
 from mysql.connector import (connection)
 
 cnx = connection.MySQLConnection(user="Marai",
-                                 password="MARAIFS*34754SFDG_$7^FSGJnfsdg#@#$$",
-                                 host="192.168.8.16",
+                                 password="",
+                                 host="",
                                  database="DiscordBots")
 cursor = cnx.cursor()
 
