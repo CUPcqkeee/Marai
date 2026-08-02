@@ -5,8 +5,8 @@ from disnake.ext import commands
 from mysql.connector import (connection)
 
 db = connection.MySQLConnection(user="Marai",
-                                password="MARAIFS*34754SFDG_$7^FSGJnfsdg#@#$$",
-                                host="192.168.8.16",
+                                password="",
+                                host="",
                                 database="DiscordBots")
 cursor = db.cursor()
 
